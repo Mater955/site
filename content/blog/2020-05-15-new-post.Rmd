@@ -52,6 +52,7 @@ guess <- "An InVESTi-"
 guess="GATOR!"
 ```
 ```{R}
+#Drum roll please...
 cat(c(guess,py$guess))
 ```
 
