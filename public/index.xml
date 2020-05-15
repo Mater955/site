@@ -17,7 +17,7 @@
       <pubDate>Fri, 15 May 2020 00:00:00 +0000</pubDate>
       
       <guid>/blog/new-post/</guid>
-      <description> Coding if Cool!
+      <description> Coding if Cool! testing
 #Python code chunk x=&amp;quot;dog&amp;quot; #R code chunk library(reticulate) py$x ## NULL </description>
     </item>
     
