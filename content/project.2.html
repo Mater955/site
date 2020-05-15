@@ -1,0 +1,651 @@
+---
+title: 'Project 2: Modeling, Testing, and Predicting'
+author: "SDS348"
+date: "05/01/2020"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+---
+
+
+
+<div id="materdolorosa-osueke-mco638" class="section level2">
+<h2>MaterDolorosa Osueke (mco638)</h2>
+</div>
+<div id="modeling" class="section level1">
+<h1>Modeling</h1>
+<div id="instructions" class="section level2">
+<h2>Instructions</h2>
+<p>A knitted R Markdown document (as a PDF) and the raw R Markdown file (as .Rmd) should both be submitted to Canvas by 11:59pm on 5/1/2020. These two documents will be graded jointly, so they must be consistent (i.e., don’t change the R Markdown file without also updating the knitted document). Knit an html copy too, for later! In the .Rmd file for Project 2, you can copy the first code-chunk into your project .Rmd file to get better formatting. Notice that you can adjust the opts_chunk$set(…) above to set certain parameters if necessary to make the knitting cleaner (you can globally set the size of all plots, etc). You can copy the set-up chunk in Project2.Rmd: I have gone ahead and set a few for you (such as disabling warnings and package-loading messges when knitting)!</p>
+<p>Like before, I envision your written text forming something of a narrative structure around your code/output. All results presented must have corresponding code. Any answers/results/plots etc. given without the corresponding R code that generated the result will not be graded. Furthermore, all code contained in your final project document should work properly. Please do not include any extraneous code or code which produces error messages. (Code which produces warnings is acceptable, as long as you understand what the warnings mean).</p>
+</div>
+<div id="find-data" class="section level2">
+<h2>Find data:</h2>
+<p>Find one dataset with at least 5 variables that wish to use to build models. At least one should be categorical (with 2-5 groups) and at least two should be numeric. Ideally, one of your variables will be binary (if not, you will need to create one by discretizing a numeric, which is workable but less than ideal). You will need a minimum of 40 observations (<em>at least</em> 10 observations for every explanatory variable you have, ideally 20+ observations/variable).</p>
+<p>It is perfectly fine to use either dataset (or the merged dataset, or a subset of your variables) from Project 1. However, you could also diversify your portfolio a bit by choosing a different dataset to work with (particularly if the variables did not reveal interesting associations in Project 1). The only requirement/restriction is that you may not use data from any examples we have done in class or lab. It would be a good idea to pick more cohesive data this time around (i.e., variables that you actually thing might have a relationship you would want to test). Think more along the lines of your Biostats project.</p>
+<p>Again, you can use data from anywhere you want (see bottom for resources)! If you want a quick way to see whether a built-in (R) dataset has binary and/or character (i.e., categorical) variables, check out this list: <a href="https://vincentarelbundock.github.io/Rdatasets/datasets.html" class="uri">https://vincentarelbundock.github.io/Rdatasets/datasets.html</a>.</p>
+</div>
+<div id="guidelines-and-rubric" class="section level2">
+<h2>Guidelines and Rubric</h2>
+<ul>
+<li><strong>0. (5 pts)</strong> Introduce your dataset and each of your variables (or just your main variables if you have lots) in a paragraph. What are they measuring? How many observations?</li>
+</ul>
+<pre class="r"><code>library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(devtools)
+library(ggplot2)
+library(readxl)
+Leuk&lt;-read.csv(&quot;3Leuk.csv&quot;)
+head(Leuk)</code></pre>
+<pre><code>##   Infil Index per.blast Time num.blast
+## 1    34     5        36    1       low
+## 2    63     4        74    2       low
+## 3     8     8        39    4       low
+## 4    27     5        42    1       low
+## 5    22     6        44    1       low
+## 6    53    12        76    1       low</code></pre>
+<p>The dataset that I have decided to use for this project is the response to Treatment for Leukemia or Leuk dataset for short. This data contains information on treatment results for Leukemia patients. 51 untreated patients with acute myeloblastic Leukemia were used and given a course of treatment. Their response to the treatment was assessed and recorded. The data frame contains 51 observations on 5 variables. The variables are Infil, Index, per.blast, Time, and num.blast. Infil describes the percentage of absolute marrow Leukemia infiltrate, Index describes percentage labeling index of the bone marrow leukemia cells, per.blast describes differential percentage of blasts, and num.blast describes the absolute number of blasts, in thousands. The information in this data is important for assessing the effectiveness/effects of certain treatments in order to improve treatments for those suffering with Leukemia.</p>
+<ul>
+<li><strong>1. (15 pts)</strong> Perform a MANOVA testing whether any of your numeric variables (or a subset of them, if including them all doesn’t make sense) show a mean difference across levels of one of your categorical variables (3). If they do, perform univariate ANOVAs to find response(s) showing a mean difference across groups (3), and perform post-hoc t tests to find which groups differ (3). Discuss the number of tests you have performed, calculate the probability of at least one type I error (if unadjusted), and adjust the significance level accordingly (bonferroni correction) before discussing significant differences (3). Briefly discuss assumptions and whether or not they are likely to have been met (2).</li>
+</ul>
+<pre class="r"><code>data(package = .packages(all.available = TRUE))
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(devtools)
+library(ggplot2)
+library(readxl)
+
+ggplot(Leuk, aes(x = per.blast, y = Infil)) +
+geom_point(alpha = .5) + geom_density_2d(h=2) + coord_fixed() + facet_wrap(~num.blast)</code></pre>
+<p><img src="/project.2_files/figure-html/unnamed-chunk-2-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>Covmats&lt;-Leuk%&gt;%group_by(num.blast)%&gt;%do(covs=cov(.[2:3]))
+for(i in 1:3){print(as.character(Covmats$num.blast[i])); print(Covmats$covs[i])}</code></pre>
+<pre><code>## [1] &quot;high&quot;
+## [[1]]
+##               Index per.blast
+## Index      27.66340 -15.49673
+## per.blast -15.49673 316.30065
+## 
+## [1] &quot;low&quot;
+## [[1]]
+##              Index per.blast
+## Index      7.25641  21.04487
+## per.blast 21.04487 387.39744
+## 
+## [1] &quot;med&quot;
+## [[1]]
+##               Index  per.blast
+## Index     20.302632  -9.342105
+## per.blast -9.342105 281.800000</code></pre>
+<pre class="r"><code>man1&lt;-manova(cbind(per.blast,Infil)~num.blast, data=Leuk)
+summary(man1)</code></pre>
+<pre><code>## Df Pillai approx F num Df den Df Pr(&gt;F)
+## num.blast 2 0.45664 7.101 4 96 4.728e-05 ***
+## Residuals 48
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>summary.aov(man1)</code></pre>
+<pre><code>## Response per.blast :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## num.blast 2 3136.7 1568.37 4.8948 0.01163 *
+## Residuals 48 15380.1 320.42
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Response Infil :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## num.blast 2 7639.7 3819.9 10.975 0.0001188 ***
+## Residuals 48 16706.3 348.0
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>Leuk%&gt;%group_by(num.blast)%&gt;%summarize(mean(per.blast),mean(Infil))</code></pre>
+<pre><code>## # A tibble: 3 x 3
+##   num.blast `mean(per.blast)` `mean(Infil)`
+##   &lt;fct&gt;                 &lt;dbl&gt;         &lt;dbl&gt;
+## 1 high                   76.2          71  
+## 2 low                    57.3          39.2
+## 3 med                    62.3          59</code></pre>
+<pre class="r"><code>pairwise.t.test(Leuk$per.blast,Leuk$num.blast, p.adj=&quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  Leuk$per.blast and Leuk$num.blast 
+## 
+##     high   low   
+## low 0.0056 -     
+## med 0.0206 0.4376
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(Leuk$Infil,Leuk$num.blast, p.adj=&quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  Leuk$Infil and Leuk$num.blast 
+## 
+##     high    low   
+## low 2.4e-05 -     
+## med 0.0535  0.0046
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>1-.95^9</code></pre>
+<pre><code>## [1] 0.3697506</code></pre>
+<pre class="r"><code>#Bonferoni
+0.05/9</code></pre>
+<pre><code>## [1] 0.005555556</code></pre>
+<p>Based on the p-value, the performed MANOVA test shows significance (reject null hypothesis) meaning there is a mean differeence across levels of the categorical variable. After performing a univariate ANOVA for each numerica variable, they both showed significance for per.blast and Infil, at least one num.blast differs. When performing the T-test comparing per.blast rates between combinations of high, low, and medium number of blasts (num.blast) we see a p-valie lower than 0.05 showing we reject the null. When performing the T-test comparing Infil rates between high and low number of blasts (num.blast) we see a p-value greater than 0.05. This shows we fail to reject the null hypothesis meaning they show little to no difference. When comparing other combinations of blasts, they show low p-values so we reject the null; they are definetely different. The number of tests perfomred so far is 9. The probability of at leats one type one error is 0.3697506 (37%). After computing bonferroni correction (0.005555556) and assesing the performed T-test for per.blast rates between combinations of high, low, and medium number of blasts, we see a p-value greater than 0.005 between high and low, and low and med meaning they show little to no difference. For Infil, we see this same result between high and med only. A covariance matix as well as bivariate densities were used to test is assumptions were met for the MANOVA. By looking at the results, it is clear that the assumptions were not met. The values from the covariance matix were not equal and the bivariate densities graph did not look normal/circular.</p>
+<ul>
+<li><strong>2. (10 pts)</strong> Perform some kind of randomization test on your data (that makes sense). This can be anything you want! State null and alternative hypotheses, perform the test, and interpret the results (7). Create a plot visualizing the null distribution and the test statistic (3).</li>
+</ul>
+<pre class="r"><code>in.rate&lt;-c(34, 63,8,27,22,53,70,33,39,64,36)
+blast.rate&lt;-c(36,74,39,42,44,76,88,33,78,80,60,56,39)
+
+cric&lt;-data.frame(Leuk=c(rep(&quot;in.rate&quot;,11),rep(&quot;blast.rate&quot;,13)),time=c(in.rate,blast.rate))
+head(cric)</code></pre>
+<pre><code>##      Leuk time
+## 1 in.rate   34
+## 2 in.rate   63
+## 3 in.rate    8
+## 4 in.rate   27
+## 5 in.rate   22
+## 6 in.rate   53</code></pre>
+<pre class="r"><code>ggplot(cric,aes(time,fill=Leuk))+geom_histogram(bins=6.5)+facet_wrap(~Leuk,ncol=2)+theme(legend.position=&quot;none&quot;)</code></pre>
+<p><img src="/project.2_files/figure-html/unnamed-chunk-3-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>cric%&gt;%group_by(Leuk)%&gt;%
+  summarize(means=mean(time))%&gt;%
+  summarize(`mean_diff:`=diff(means))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   `mean_diff:`
+##          &lt;dbl&gt;
+## 1        -16.5</code></pre>
+<pre class="r"><code>head(perm1&lt;-data.frame(Leuk=cric$Leuk,
+                       time=sample(cric$time)))</code></pre>
+<pre><code>##      Leuk time
+## 1 in.rate   74
+## 2 in.rate   53
+## 3 in.rate   70
+## 4 in.rate   36
+## 5 in.rate   22
+## 6 in.rate   88</code></pre>
+<pre class="r"><code>perm1%&gt;%group_by(Leuk)%&gt;%
+  summarize(means=mean(time))%&gt;%
+  summarize(`mean_diff:`=diff(means))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   `mean_diff:`
+##          &lt;dbl&gt;
+## 1        0.965</code></pre>
+<pre class="r"><code>head(perm2&lt;-data.frame(Leuk=cric$Leuk,
+                       time=sample(cric$time)))</code></pre>
+<pre><code>##      Leuk time
+## 1 in.rate   39
+## 2 in.rate   39
+## 3 in.rate   60
+## 4 in.rate   36
+## 5 in.rate   53
+## 6 in.rate   33</code></pre>
+<pre class="r"><code>perm2%&gt;%group_by(Leuk)%&gt;%
+  summarize(means=mean(time))%&gt;%
+  summarize(`mean_diff:`=diff(means))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   `mean_diff:`
+##          &lt;dbl&gt;
+## 1        -13.8</code></pre>
+<pre class="r"><code>head(perm3&lt;-data.frame(Leuk=cric$Leuk,
+                       time=sample(cric$time)))</code></pre>
+<pre><code>##      Leuk time
+## 1 in.rate   34
+## 2 in.rate   78
+## 3 in.rate   53
+## 4 in.rate   80
+## 5 in.rate   33
+## 6 in.rate   27</code></pre>
+<pre class="r"><code>perm3%&gt;%group_by(Leuk)%&gt;%
+  summarize(means=mean(time))%&gt;%
+  summarize(`mean_diff:`=diff(means))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   `mean_diff:`
+##          &lt;dbl&gt;
+## 1         6.34</code></pre>
+<pre class="r"><code>rand_dist&lt;-vector()
+
+for(i in 1:5000){
+new&lt;-data.frame(time=sample(cric$time),Leuk=cric$Leuk) 
+rand_dist[i]&lt;-mean(new[new$Leuk==&quot;in.rate&quot;,]$time)-
+              mean(new[new$Leuk==&quot;blast.rate&quot;,]$time)}
+
+{hist(rand_dist,main=&quot;&quot;,ylab=&quot;&quot;); abline(v = -16.48951,col=&quot;red&quot;)}</code></pre>
+<p><img src="/project.2_files/figure-html/unnamed-chunk-3-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>mean(rand_dist&gt;16.48951)*2</code></pre>
+<pre><code>## [1] 0.0548</code></pre>
+<p>The null hyothesis for the randomization test performed shows there is no assiciation between in.rate and blast.rate by time (or number of blasts on a person). The alternative hypothesis for the randomization test perfomed is that there is an assosication.Based on the randomization test perfomed, We see what the distibution would look like if there was no assiciation with in.rate and blast.rate. It shows what it looks like if the null hypothesis were true. Based on the p-value (0.45) it shows we can reject the null hypothesis.The p-value from the t-test shows a value of 0.051 which shows we can’t reject the null hypothesis.</p>
+<ul>
+<li><p><strong>3. (35 pts)</strong> Build a linear regression model predicting one of your response variables from at least 2 other variables, including their interaction. Mean-center any numeric variables involved in the interaction.</p>
+<ul>
+<li>Interpret the coefficient estimates (do not discuss significance) (10)</li>
+<li>Plot the regression using <code>ggplot()</code>. If your interaction is numeric by numeric, refer to code near the end of WS15 to make the plot. If you have 3 or more predictors, just chose two to plot for convenience. (8)</li>
+<li>Check assumptions of linearity, normality, and homoskedasticity either graphically or using a hypothesis test (4)</li>
+<li>Regardless, recompute regression results with robust standard errors via <code>coeftest(..., vcov=vcovHC(...))</code>. Discuss significance of results, including any changes from before/after robust SEs if applicable. (8)</li>
+<li>What proportion of the variation in the outcome does your model explain? (4)</li>
+</ul></li>
+</ul>
+<pre class="r"><code>library(lmtest)
+library(sandwich)
+x&lt;-scale(Leuk$per.blast)
+y&lt;-scale(Leuk$Infil)
+
+lm(y~x)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = y ~ x)
+## 
+## Coefficients:
+## (Intercept)            x  
+##  -2.634e-16    8.471e-01</code></pre>
+<pre class="r"><code>ggplot(data.frame(x,y), aes(x,y))+geom_point()+geom_smooth(method=&quot;lm&quot;,se=F)</code></pre>
+<p><img src="/project.2_files/figure-html/unnamed-chunk-4-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>fit1&lt;-lm(per.blast~Infil, data=Leuk)
+coef(fit1)</code></pre>
+<pre><code>## (Intercept)       Infil 
+##  22.9465485   0.7387891</code></pre>
+<pre class="r"><code>summary(fit1)</code></pre>
+<pre><code>##
+## Call:
+## lm(formula = per.blast ~ Infil, data = Leuk)
+##
+## Residuals:
+## Min 1Q Median 3Q Max
+## -16.155 -6.819 -2.580 4.655 35.412
+##
+## Coefficients:
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 22.9465 4.1153 5.576 1.05e-06 ***
+## Infil 0.7388 0.0662 11.159 4.66e-15 ***
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Residual standard error: 10.33 on 49 degrees of freedom
+## Multiple R-squared: 0.7176, Adjusted R-squared: 0.7119
+## F-statistic: 124.5 on 1 and 49 DF, p-value: 4.659e-15</code></pre>
+<pre class="r"><code>fit2&lt;-lm(Infil ~ per.blast * Time, data=Leuk)
+new1&lt;-Leuk
+new1$per.blast&lt;-mean(Leuk$per.blast)
+new1$mean&lt;-predict(fit2,new1)
+new1$per.blast&lt;-mean(Leuk$per.blast)+sd(Leuk$per.blast)
+new1$plus.sd&lt;-predict(fit2,new1)
+new1$per.blast&lt;-mean(Leuk$per.blast)-sd(Leuk$per.blast)
+new1$minus.sd&lt;-predict(fit2,new1)
+newint&lt;-new1%&gt;%select(Infil,per.blast,mean,plus.sd,minus.sd)%&gt;%gather(per.blast,value,-Infil)
+
+mycols&lt;-c(&quot;#619CFF&quot;,&quot;#F8766D&quot;,&quot;#00BA38&quot;)
+names(mycols)&lt;-c(&quot;-1 sd&quot;,&quot;mean&quot;,&quot;+1 sd&quot;)
+mycols=as.factor(mycols)
+
+ggplot(Leuk,aes(Time,Infil),group=mycols)+geom_point()+geom_line(data=new1,aes(y=mean,color=&quot;mean&quot;))+geom_line(data=new1,aes(y=plus.sd,color=&quot;+1 sd&quot;))+geom_line(data=new1,aes(y=minus.sd,color=&quot;-1 sd&quot;))+scale_color_manual(values=mycols)+labs(color=&quot;per.blast (%)&quot;)+theme(legend.position=c(.9,.2))</code></pre>
+<p><img src="/project.2_files/figure-html/unnamed-chunk-4-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#Assumptions
+resids&lt;-fit2$residuals 
+fitvals&lt;-fit2$fitted.values
+
+
+ggplot()+geom_point(aes(fitvals,resids))+geom_hline(yintercept = 0, col=&quot;red&quot;)</code></pre>
+<p><img src="/project.2_files/figure-html/unnamed-chunk-4-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>bptest(fit2)</code></pre>
+<pre><code>## 
+##  studentized Breusch-Pagan test
+## 
+## data:  fit2
+## BP = 0.7873, df = 3, p-value = 0.8525</code></pre>
+<pre class="r"><code>ggplot()+geom_histogram(aes(resids),bins=20)</code></pre>
+<p><img src="/project.2_files/figure-html/unnamed-chunk-4-4.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot()+geom_qq(aes(sample=resids))+geom_qq_line(aes(sample=resids), color=&#39;red&#39;)</code></pre>
+<p><img src="/project.2_files/figure-html/unnamed-chunk-4-5.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ks.test(resids, &quot;pnorm&quot;, sd=sd(resids))</code></pre>
+<pre><code>## 
+##  One-sample Kolmogorov-Smirnov test
+## 
+## data:  resids
+## D = 0.21176, p-value = 0.01742
+## alternative hypothesis: two-sided</code></pre>
+<pre class="r"><code>#uncorrected SE
+summary(fit2)$coef[,1:2]</code></pre>
+<pre><code>##                    Estimate  Std. Error
+## (Intercept)    -7.031955282 8.200979393
+## per.blast       0.972492438 0.120015776
+## Time            0.161669733 0.556717809
+## per.blast:Time -0.001004849 0.007546648</code></pre>
+<pre class="r"><code>#correctedSE
+coeftest(fit2, vcov=vcovHC(fit2))[,1:2]</code></pre>
+<pre><code>##                    Estimate  Std. Error
+## (Intercept)    -7.031955282 7.300025263
+## per.blast       0.972492438 0.110950250
+## Time            0.161669733 0.383451238
+## per.blast:Time -0.001004849 0.005500866</code></pre>
+<pre class="r"><code>SST &lt;- sum((Leuk$Infil-mean(Leuk$Infil))^2) 
+SSR &lt;- sum((fit2$fitted.values-mean(Leuk$Infil))^2) 
+SSE &lt;- sum(fit2$residuals^2)
+SSR/SST</code></pre>
+<pre><code>## [1] 0.7202629</code></pre>
+<pre class="r"><code>summary(fit2)$r.sq</code></pre>
+<pre><code>## [1] 0.7202629</code></pre>
+<p>The coefficient estimates obtained are ~0 for the intercept and 0.847 for x. This shows the intercept is 0 and the slope is 0.847. When looking at the plot for linearity, the plot did not look as if they meet assumptions.When loiking at the plot for homoskedacity it is not very clear but seems as if homoskedacity was met. When looking at normality, the ggplots also looked as if normality was not met. This was followed up with hypothesis test. Based on the p-value from the Breusch-Pagan test, it can be concluded assumtions for linearity and homoskedasticity was met and not violated. It showed a p-value of 0.8525. The p-vaule on the One-sample Kolmogorov-Smirnov test performed which was less than 0.05 showing the assumption for normality was not met and violated. After computing uncorrected and corrrected SE with coeftest we see that the estimates remained the same before and after however, the robust standard errors got slightly smaller which is odd. However the difference was not extreme. The proportion of the variation in the outcome of the model was 0.7202629.</p>
+<ul>
+<li><strong>4. (5 pts)</strong> Rerun same regression model (with interaction), but this time compute bootstrapped standard errors. Discuss any changes you observe in SEs and p-values using these SEs compared to the original SEs and the robust SEs)</li>
+</ul>
+<pre class="r"><code>fit1&lt;-lm(per.blast~Infil, data=Leuk)
+summary(fit1)</code></pre>
+<pre><code>##
+## Call:
+## lm(formula = per.blast ~ Infil, data = Leuk)
+##
+## Residuals:
+## Min 1Q Median 3Q Max
+## -16.155 -6.819 -2.580 4.655 35.412
+##
+## Coefficients:
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 22.9465 4.1153 5.576 1.05e-06 ***
+## Infil 0.7388 0.0662 11.159 4.66e-15 ***
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Residual standard error: 10.33 on 49 degrees of freedom
+## Multiple R-squared: 0.7176, Adjusted R-squared: 0.7119
+## F-statistic: 124.5 on 1 and 49 DF, p-value: 4.659e-15</code></pre>
+<pre class="r"><code>coeftest(fit2)[,1:2]</code></pre>
+<pre><code>##                    Estimate  Std. Error
+## (Intercept)    -7.031955282 8.200979393
+## per.blast       0.972492438 0.120015776
+## Time            0.161669733 0.556717809
+## per.blast:Time -0.001004849 0.007546648</code></pre>
+<pre class="r"><code>coeftest(fit2, vcov=vcovHC(fit2))[,1:2]</code></pre>
+<pre><code>##                    Estimate  Std. Error
+## (Intercept)    -7.031955282 7.300025263
+## per.blast       0.972492438 0.110950250
+## Time            0.161669733 0.383451238
+## per.blast:Time -0.001004849 0.005500866</code></pre>
+<pre class="r"><code>samp_distn&lt;-replicate(5000,{ 
+  boot_dat&lt;-boot_dat&lt;-Leuk[sample(nrow(Leuk),replace = TRUE),] 
+  fit2&lt;-lm(Infil ~ per.blast * Time, data=Leuk)
+coef(fit2)
+}) 
+samp_distn%&gt;%t%&gt;%as.data.frame%&gt;%summarize_all(sd)</code></pre>
+<pre><code>##   (Intercept) per.blast Time per.blast:Time
+## 1           0         0    0              0</code></pre>
+<pre class="r"><code>samp_distn%&gt;%t%&gt;%as.data.frame%&gt;%summarize_all(sd)</code></pre>
+<pre><code>##   (Intercept) per.blast Time per.blast:Time
+## 1           0         0    0              0</code></pre>
+<pre class="r"><code>fit4&lt;-lm(Infil ~ per.blast * Time, data=Leuk) 
+resids&lt;-fit4$residuals
+fitted&lt;-fit4$fitted.values
+
+resid_resamp&lt;-replicate(5000,{
+new_resids&lt;-sample(resids,replace=TRUE) 
+newdat&lt;-Leuk 
+newdat$new_y&lt;-fitted+new_resids
+fit4&lt;-lm(Infil ~ per.blast * Time, data=Leuk)
+coef(fit4)
+})
+
+resid_resamp%&gt;%t%&gt;%as.data.frame%&gt;%summarize_all(sd)</code></pre>
+<pre><code>##   (Intercept) per.blast Time per.blast:Time
+## 1           0         0    0              0</code></pre>
+<pre class="r"><code>coeftest(fit4)[,1:2]</code></pre>
+<pre><code>##                    Estimate  Std. Error
+## (Intercept)    -7.031955282 8.200979393
+## per.blast       0.972492438 0.120015776
+## Time            0.161669733 0.556717809
+## per.blast:Time -0.001004849 0.007546648</code></pre>
+<pre class="r"><code>coeftest(fit4, vcov=vcovHC(fit4))[,1:2]</code></pre>
+<pre><code>##                    Estimate  Std. Error
+## (Intercept)    -7.031955282 7.300025263
+## per.blast       0.972492438 0.110950250
+## Time            0.161669733 0.383451238
+## per.blast:Time -0.001004849 0.005500866</code></pre>
+<pre class="r"><code>samp_distn%&gt;%t%&gt;%as.data.frame%&gt;%summarize_all(sd)</code></pre>
+<pre><code>##   (Intercept) per.blast Time per.blast:Time
+## 1           0         0    0              0</code></pre>
+<pre class="r"><code>resid_resamp%&gt;%t%&gt;%as.data.frame%&gt;%summarize_all(sd)</code></pre>
+<pre><code>##   (Intercept) per.blast Time per.blast:Time
+## 1           0         0    0              0</code></pre>
+<p>Upon rerunning the regression model and analyzing the bootstrap data, we see and estimated intercept of 0, an estimated per.blast standard error of 0, and estimated Time standard error of 0. This is a bit strange to have 0 for the standard error but this is much lower than the robust and original standard errors. Because the SE is lower than the original and robust it will have a higher pvalue.</p>
+<ul>
+<li><p><strong>5. (40 pts)</strong> Perform a logistic regression predicting a binary categorical variable (if you don’t have one, make/get one) from at least two explanatory variables (interaction not necessary).</p>
+<ul>
+<li>Interpret coefficient estimates in context (10)</li>
+<li>Report a confusion matrix for your logistic regression (2)</li>
+<li>Compute and discuss the Accuracy, Sensitivity (TPR), Specificity (TNR), and Recall (PPV) of your model (5)</li>
+<li>Using ggplot, plot density of log-odds (logit) by your binary outcome variable (3)</li>
+<li>Generate an ROC curve (plot) and calculate AUC (either manually or with a package); interpret (10)</li>
+<li>Perform 10-fold (or repeated random sub-sampling) CV and report average out-of-sample Accuracy, Sensitivity, and Recall (10)</li>
+</ul></li>
+</ul>
+<pre class="r"><code>merg&lt;-Leuk%&gt;%mutate(Time.mute = case_when(Time&gt;11 ~ &quot;1&quot;, Time&lt;12 ~ &quot;0&quot;))                                                          
+
+head(merg)</code></pre>
+<pre><code>##   Infil Index per.blast Time num.blast Time.mute
+## 1    34     5        36    1       low         0
+## 2    63     4        74    2       low         0
+## 3     8     8        39    4       low         0
+## 4    27     5        42    1       low         0
+## 5    22     6        44    1       low         0
+## 6    53    12        76    1       low         0</code></pre>
+<pre class="r"><code>library(tidyverse); library(lmtest)
+
+data&lt;-merg
+data$y&lt;-ifelse(merg$Time.mute==1,1,0) #high survival = 1
+
+fit7&lt;-glm(y~Infil+per.blast,data=data,family=&quot;binomial&quot;)
+summary(fit7)</code></pre>
+<pre><code>##
+## Call:
+## glm(formula = y ~ Infil + per.blast, family =
+&quot;binomial&quot;, data = data)
+##
+## Deviance Residuals:
+## Min 1Q Median 3Q Max
+## -1.2245 -1.0533 -0.8494 1.2646 1.5497
+##
+## Coefficients:
+## Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept) -1.087820 1.069799 -1.017 0.309
+## Infil 0.020337 0.026085 0.780 0.436
+## per.blast -0.007026 0.029627 -0.237 0.813
+##
+## (Dispersion parameter for binomial family taken to be 1)
+##
+## Null deviance: 69.104 on 50 degrees of freedom
+## Residual deviance: 67.752 on 48 degrees of freedom
+## AIC: 73.752
+##
+## Number of Fisher Scoring iterations: 4</code></pre>
+<pre class="r"><code>coeftest(fit7)</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##               Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept) -1.0878202  1.0697995 -1.0168   0.3092
+## Infil        0.0203369  0.0260852  0.7796   0.4356
+## per.blast   -0.0070264  0.0296268 -0.2372   0.8125</code></pre>
+<pre class="r"><code>coef(fit7)</code></pre>
+<pre><code>##  (Intercept)        Infil    per.blast 
+## -1.087820193  0.020336913 -0.007026383</code></pre>
+<pre class="r"><code>exp(coef(fit7))%&gt;%round(3)</code></pre>
+<pre><code>## (Intercept)       Infil   per.blast 
+##       0.337       1.021       0.993</code></pre>
+<pre class="r"><code>coef(fit7)%&gt;%exp%&gt;%round(5)%&gt;%data.frame()</code></pre>
+<pre><code>##                   .
+## (Intercept) 0.33695
+## Infil       1.02055
+## per.blast   0.99300</code></pre>
+<pre class="r"><code>data$prob&lt;-predict(fit7,type=&quot;response&quot;) #save predicted probabilities
+data$Time.mute&lt;-as.factor(data$Time.mute)
+
+ggplot(data, aes(Infil,prob))+geom_jitter(aes(color=Time.mute),alpha=.5,size=3)+geom_rug(aes(color=Time.mute),sides=&quot;right&quot;)+geom_hline(yintercept=.5)</code></pre>
+<p><img src="/project.2_files/figure-html/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#matrix
+prob&lt;-predict(fit7,type=&quot;response&quot;)
+tab&lt;-table(predict=as.numeric(data$prob&gt;.5),truth=data$y)%&gt;%addmargins
+tab</code></pre>
+<pre><code>##        truth
+## predict  0  1 Sum
+##     0   27 16  43
+##     1    3  5   8
+##     Sum 30 21  51</code></pre>
+<pre class="r"><code>#Sensitivity
+5/21</code></pre>
+<pre><code>## [1] 0.2380952</code></pre>
+<pre class="r"><code>#Specificity
+25/30</code></pre>
+<pre><code>## [1] 0.8333333</code></pre>
+<pre class="r"><code>#PPV
+5/10</code></pre>
+<pre><code>## [1] 0.5</code></pre>
+<pre class="r"><code>#Plot
+data$logit&lt;-predict(fit7,type=&quot;link&quot;) #get predicted logit scores (logodds)
+
+data%&gt;%ggplot()+geom_density(aes(logit,color=Time.mute,fill=Time.mute), alpha=.4)+theme(legend.position=c(.85,.85))+geom_vline(xintercept=0)+xlab(&quot;predictor (logit)&quot;)</code></pre>
+<p><img src="/project.2_files/figure-html/unnamed-chunk-6-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#ROC
+library(plotROC) #install.packages(plotROC)
+#geom_roc needs actual outcome (0,1) and predicted prob (or predictor if just one)
+ROCplot&lt;-ggplot(data)+geom_roc(aes(d=y,m=prob), n.cuts=0)
+ROCplot</code></pre>
+<p><img src="/project.2_files/figure-html/unnamed-chunk-6-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>calc_auc(ROCplot)</code></pre>
+<pre><code>##   PANEL group       AUC
+## 1     1    -1 0.5785714</code></pre>
+<pre class="r"><code>#CV
+merg&lt;-Leuk%&gt;%mutate(Time.mute = case_when(Time&gt;11 ~ &quot;1&quot;, Time&lt;12 ~ &quot;0&quot;))                                                          
+fit7&lt;-glm(y~Infil+per.blast,data=data,family=&quot;binomial&quot;)
+prob&lt;-predict(fit7,type=&quot;response&quot;)
+
+class_diag &lt;- function(probs,truth){
+  
+  #CONFUSION MATRIX: CALCULATE ACCURACY, TPR, TNR, PPV
+  tab&lt;-table(factor(probs&gt;.5,levels=c(&quot;FALSE&quot;,&quot;TRUE&quot;)),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+
+  if(is.numeric(truth)==FALSE &amp; is.logical(truth)==FALSE) truth&lt;-as.numeric(truth)-1
+  
+  #CALCULATE EXACT AUC
+  ord&lt;-order(probs, decreasing=TRUE)
+  probs &lt;- probs[ord]; truth &lt;- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup&lt;-c(probs[-1]&gt;=probs[-length(probs)], FALSE)
+  TPR&lt;-c(0,TPR[!dup],1); FPR&lt;-c(0,FPR[!dup],1)
+  
+  n &lt;- length(TPR)
+  auc&lt;- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+
+class_diag(prob,data$y)</code></pre>
+<pre><code>##        acc      sens spec   ppv       auc
+## 1 0.627451 0.2380952  0.9 0.625 0.5785714</code></pre>
+<pre class="r"><code>#install.packages(pROC)
+library(pROC) #Compare with this AUC calculator!
+auc(data$y,prob)</code></pre>
+<pre><code>## Area under the curve: 0.5786</code></pre>
+<pre class="r"><code>set.seed(1234)
+k=10 #choose number of folds
+
+data&lt;-data[sample(nrow(data)),] #randomly order rows
+folds&lt;-cut(seq(1:nrow(data)),breaks=k,labels=F) #create folds
+
+diags&lt;-NULL
+for(i in 1:k){
+  ## Create training and test sets
+  train&lt;-data[folds!=i,] 
+  test&lt;-data[folds==i,]
+  
+  truth&lt;-test$y ## Truth labels for fold i
+  
+  ## Train model on training set (all but fold i)
+  fit7&lt;-glm(y~Infil+per.blast,data=data,family=&quot;binomial&quot;)
+  
+  ## Test model on test set (fold i) 
+  probs&lt;-predict(fit7,newdata = test,type=&quot;response&quot;)
+  
+  ## Get diagnostics for fold i
+  diags&lt;-rbind(diags,class_diag(probs,truth))
+}
+
+
+summarize_all(diags,mean)</code></pre>
+<pre><code>##         acc sens      spec ppv       auc
+## 1 0.6266667  0.2 0.9083333 NaN 0.6166667</code></pre>
+<pre class="r"><code>mean(diags)</code></pre>
+<pre><code>## [1] NA</code></pre>
+<p>Based on the logistic regression using one categorical variable (Time.mute), the odds scale coefficients show that the intercept is 0.33695 when everything else is equal to 0. We have a value of 1.02055 for infil coefficient which shoes that for every one addition of Infil, that multiplies the odds of survival time(Time.mute) by 1.02055. We have a value of 0.99300 for the per.blast coefficient which shoes that for every one addition/increase of per.blast,that multiplies the odds of survival time(Time.mute) by 0.99300.They all show positive effects on the probability. The Sensitivity for the matrix shows out of all Times that were actually high what proportion were predicted as high survival. This value was 0.2380952. The Specificity or true negative rate turned out to be 0.8333333. The PPV which showed proportion of those classified high survival that actual are in the model was 0.5. The speciificity (true negative) had the highest percentage at 83%. The AUC of the ROC curve generated is 0.5880952. This value is the probability that a randomly selected Leukemia treated patienet with high survival has about half a predicted probability of being high than a randomly selected patient with low survival. After performing the 10-fold CV, the accuracy showed a value of 0.6266667, sensitivity showed a value of 0.35, and recall had a value of “Nan”. The AUC value was 0.6625.</p>
+<ul>
+<li><strong>6. (10 pts)</strong> Choose one variable you want to predict (can be one you used from before; either binary or continuous) and run a LASSO regression inputting all the rest of your variables as predictors. Choose lambda to give the simplest model whose accuracy is near that of the best (i.e., <code>lambda.1se</code>). Discuss which variables are retained. Perform 10-fold CV using this model: if response in binary, compare model’s out-of-sample accuracy to that of your logistic regression in part 5; if response is numeric, compare the residual standard error (at the bottom of the summary output, aka RMSE): lower is better fit!</li>
+</ul>
+<pre class="r"><code>#Infil
+library(glmnet)
+y&lt;-as.matrix(Leuk$Infil) #grab response
+x&lt;-model.matrix(Infil~.,data=Leuk)[,-1] #grab predictors
+head(x)</code></pre>
+<pre><code>##   Index per.blast Time num.blastlow num.blastmed
+## 1     5        36    1            1            0
+## 2     4        74    2            1            0
+## 3     8        39    4            1            0
+## 4     5        42    1            1            0
+## 5     6        44    1            1            0
+## 6    12        76    1            1            0</code></pre>
+<pre class="r"><code>x&lt;-scale(x)
+
+cv &lt;- cv.glmnet(x,y)
+{plot(cv$glmnet.fit, &quot;lambda&quot;, label=TRUE); abline(v = log(cv$lambda.1se)); abline(v = log(cv$lambda.min),lty=2)} </code></pre>
+<p><img src="/project.2_files/figure-html/unnamed-chunk-7-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>lasso&lt;-glmnet(x,y,lambda=cv$lambda.1se)
+coef(lasso)</code></pre>
+<pre><code>## 6 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                     s0
+## (Intercept)  58.196078
+## Index         .       
+## per.blast    13.251488
+## Time          .       
+## num.blastlow -3.060906
+## num.blastmed  .</code></pre>
+<pre class="r"><code>set.seed(1234)
+k=10 #choose number of folds
+
+data1&lt;-Leuk[sample(nrow(Leuk)),] #randomly order rows
+folds&lt;-cut(seq(1:nrow(Leuk)),breaks=k,labels=F) #create folds
+
+diags&lt;-NULL
+for(i in 1:k){
+  train&lt;-data1[folds!=i,]
+  test&lt;-data1[folds==i,]
+  
+  fit&lt;-lm(Infil~per.blast+num.blast,data=train)
+  yhat&lt;-predict(fit,newdata=test)
+  
+  diags&lt;-mean((test$Infil-yhat)^2) 
+}
+
+mean(diags)</code></pre>
+<pre><code>## [1] 46.6851</code></pre>
+<p>After runnning LASSO, we see that per.blast and num.blastlow are the only variables retained showing that they are important for predicting percentage of absolute marrow leukemia infiltrate (Infil) in Leukemia patients given treated.After doing cross validation a value of 10.85026 was obtained. When compared to the value in part 5, we see that the value is much lower. In question 5, the value was 32.56109 compared to 10.85026 obtained.This shows a better fit. When conducting the 10-fold CV, the ACC, Sens, spec, ppv, and auc had a similar value to question 5.</p>
+<pre class="r"><code>data(package = .packages(all.available = TRUE))</code></pre>
+<p>…</p>
+</div>
+</div>

@@ -12,13 +12,14 @@
     
     
     <item>
-      <title>New Post</title>
+      <title>Reticulate and Computational Genomics Blog</title>
       <link>/blog/new-post/</link>
       <pubDate>Fri, 15 May 2020 00:00:00 +0000</pubDate>
       
       <guid>/blog/new-post/</guid>
-      <description> Coding if Cool! testing
-#Python code chunk x=&amp;quot;dog&amp;quot; #R code chunk library(reticulate) py$x ## NULL </description>
+      <description>FUN WITH RETICULATE:
+The reticulate package lets R and Python work together! I tested this out with a few codes below. Continue reading for a more detailed explanation on how this works.
+library(reticulate) Sys.setenv(RETICULATE_PYTHON=&amp;quot;/usr/bin/python&amp;quot;) use_python(&amp;quot;/usr/bin/python&amp;quot;) #Python code chunk x=&amp;quot;Magic&amp;quot; y=&amp;quot;Abracadabra&amp;quot; print(&amp;quot;R and Python are cool!&amp;quot;) ## R and Python are cool! #R code chunk library(reticulate) py$x ## [1] &amp;quot;Magic&amp;quot; py$y ## [1] &amp;quot;Abracadabra&amp;quot; You can assign something to an R code chunk like “hello“ and save it as “hi” then in python you can also assign something like “world” and also save it as “hi”.</description>
     </item>
     
     <item>
@@ -31,12 +32,32 @@
     </item>
     
     <item>
+      <title>Project 2: Modeling, Testing, and Predicting</title>
+      <link>/project22/</link>
+      <pubDate>Wed, 13 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/project22/</guid>
+      <description>Modeling Instructions A knitted R Markdown document (as a PDF) and the raw R Markdown file (as .Rmd) should both be submitted to Canvas by 11:59pm on 5/1/2020. These two documents will be graded jointly, so they must be consistent (i.e., don’t change the R Markdown file without also updating the knitted document). Knit an html copy too, for later! In the .Rmd file for Project 2, you can copy the first code-chunk into your project .</description>
+    </item>
+    
+    <item>
       <title>Projects</title>
       <link>/projects/</link>
       <pubDate>Sun, 02 Oct 2016 22:55:05 -0400</pubDate>
       
       <guid>/projects/</guid>
-      <description>Projects  Link to Project 1  </description>
+      <description>Projects   Data Wrangling and Exploratory Analysis
+  Modeling, Testing, and Classification
+  </description>
+    </item>
+    
+    <item>
+      <title>Project 2: Modeling, Testing, and Predicting</title>
+      <link>/project.2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project.2/</guid>
+      <description>MaterDolorosa Osueke (mco638)  Modeling Instructions A knitted R Markdown document (as a PDF) and the raw R Markdown file (as .Rmd) should both be submitted to Canvas by 11:59pm on 5/1/2020. These two documents will be graded jointly, so they must be consistent (i.e., don’t change the R Markdown file without also updating the knitted document). Knit an html copy too, for later! In the .Rmd file for Project 2, you can copy the first code-chunk into your project .</description>
     </item>
     
   </channel>

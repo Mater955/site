@@ -10,4 +10,7 @@ title: Projects
 
 ## Projects
 
-- [Link to Project 1](/Project)
+- [Data Wrangling and Exploratory Analysis](/Project)
+
+- [Modeling, Testing, and Classification](/project22/)
+

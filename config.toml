@@ -22,8 +22,9 @@ theme = "hugo-sustain"
 [params.social]
   
   Email         = "mosuekecollege@gmail.com"
-  Twitter       = "username"
-  Stackoverflow = "username"
+  Twitter       = "momo_mater"
+  Stackoverflow = "13522065"
+  Github        = "Mater955"
 
 ## Main Menu
 [[menu.main]]

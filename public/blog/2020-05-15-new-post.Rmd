@@ -1,5 +1,5 @@
 ---
-title: New Post
+title: Reticulate and Computational Genomics Blog
 author: ''
 date: '2020-05-15'
 slug: new-post
@@ -9,16 +9,88 @@ description: ''
 ---
 ![](/blog/2020-05-15-new-post_files/IMG_8873.JPG)
 
-Coding if Cool!
-testing
 
-```{Python}
+FUN WITH RETICULATE: 
+
+The reticulate package lets R and Python work together! I tested this out with a few codes below. Continue reading for a more detailed explanation on how this works.
+```{R}
+library(reticulate)
+Sys.setenv(RETICULATE_PYTHON="/usr/bin/python")
+use_python("/usr/bin/python")
+```
+
+```{python}
 #Python code chunk
-x="dog"
+x="Magic"
+y="Abracadabra"
+print("R and Python are cool!")
 ```
 
 ```{R}
 #R code chunk
 library(reticulate)
 py$x
+py$y
 ```
+You can assign something to an R code chunk like “hello“ and save it as “hi” then in python you can also assign something like “world” and also save it as “hi”. You can access both codes in either R or python!
+
+In python, With “r.hi” it will look for what was saved as “hi” in R and read it into python. So when you use print(r.hi, hi) it will give both outputs from R and python.
+
+In R, you can access the “hi” created in python with “py$hi”
+
+The output puts both codes together.See the example below which answers a punny riddle!
+
+
+Riddle: What do you call an alligator in a vest? 
+```{R}
+#R code chunk
+guess <- "An Investi-"
+```
+
+```{python}
+#python code chunk
+guess="GATOR!"
+```
+```{R}
+cat(c(guess,py$guess))
+```
+
+![](/blog/2020-05-15-new-post_files/IMG_8888.JPG)
+
+```{R}
+# Ba dum tss! :)
+```
+
+Bioinformatics and Computational Genomics:
+
+Through the use of k-mers, which are subsequences of a certain length "k", we can do some DNA sequencing analysis!
+
+In this example the k-mers are composed of nucleotides. A function is written below to find 3-mers in the DNA sequence of my_seq1 and my_seq2.
+```{python}
+my_seq1 = "ATCATCATG"
+def count_kmers(read, k):
+    counts = {}
+    num_kmers = len(read) - k + 1 
+    for i in range(num_kmers):
+        kmer = read[i:i+k]
+        if kmer not in counts:
+            counts[kmer] = 0
+        counts[kmer] += 1
+    return counts
+count_kmers("ATCATCATG",3)
+```
+
+```{python}
+my_seq2 = "CAGCCCAATCAGGCTCTACTGCCACTAAACTTACGCAGGATATATTTACGCCGACGTACT"
+def count_kmers(read, k):
+    counts = {}
+    num_kmers = len(read) - k + 1 
+    for i in range(num_kmers):
+        kmer = read[i:i+k]
+        if kmer not in counts:
+            counts[kmer] = 0
+        counts[kmer] += 1
+    return counts
+count_kmers("CAGCCCAATCAGGCTCTACTGCCACTAAACTTACGCAGGATATATTTACGCCGACGTACT", 3)
+```
+![](/blog/2020-05-15-new-post_files/IMG_8889.JPG)

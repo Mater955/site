@@ -1,5 +1,5 @@
 ---
-title: New Post
+title: Reticulate and Computational Genomics Blog
 author: ''
 date: '2020-05-15'
 slug: new-post
@@ -11,11 +11,60 @@ description: ''
 
 
 <p><img src="/blog/2020-05-15-new-post_files/IMG_8873.JPG" /></p>
-<p>Coding if Cool!
-testing</p>
+<p>FUN WITH RETICULATE:</p>
+<p>The reticulate package lets R and Python work together! I tested this out with a few codes below. Continue reading for a more detailed explanation on how this works.</p>
+<pre class="r"><code>library(reticulate)
+Sys.setenv(RETICULATE_PYTHON=&quot;/usr/bin/python&quot;)
+use_python(&quot;/usr/bin/python&quot;)</code></pre>
 <pre class="python"><code>#Python code chunk
-x=&quot;dog&quot;</code></pre>
+x=&quot;Magic&quot;
+y=&quot;Abracadabra&quot;
+print(&quot;R and Python are cool!&quot;)</code></pre>
+<pre><code>## R and Python are cool!</code></pre>
 <pre class="r"><code>#R code chunk
 library(reticulate)
 py$x</code></pre>
-<pre><code>## NULL</code></pre>
+<pre><code>## [1] &quot;Magic&quot;</code></pre>
+<pre class="r"><code>py$y</code></pre>
+<pre><code>## [1] &quot;Abracadabra&quot;</code></pre>
+<p>You can assign something to an R code chunk like “hello“ and save it as “hi” then in python you can also assign something like “world” and also save it as “hi”. You can access both codes in either R or python!</p>
+<p>In python, With “r.hi” it will look for what was saved as “hi” in R and read it into python. So when you use print(r.hi, hi) it will give both outputs from R and python.</p>
+<p>In R, you can access the “hi” created in python with “py$hi”</p>
+<p>The output puts both codes together.See the example below which answers a punny riddle!</p>
+<p>Riddle: What do you call an alligator in a vest?</p>
+<pre class="r"><code>#R code chunk
+guess &lt;- &quot;An Investi-&quot;</code></pre>
+<pre class="python"><code>#python code chunk
+guess=&quot;GATOR!&quot;</code></pre>
+<pre class="r"><code>cat(c(guess,py$guess))</code></pre>
+<pre><code>## An Investi- GATOR!</code></pre>
+<p><img src="/blog/2020-05-15-new-post_files/IMG_8888.JPG" /></p>
+<pre class="r"><code># Ba dum tss! :)</code></pre>
+<p>Bioinformatics and Computational Genomics:</p>
+<p>Through the use of k-mers, which are subsequences of a certain length “k”, we can do some DNA sequencing analysis!</p>
+<p>In this example the k-mers are composed of nucleotides. A function is written below to find 3-mers in the DNA sequence of my_seq1 and my_seq2.</p>
+<pre class="python"><code>my_seq1 = &quot;ATCATCATG&quot;
+def count_kmers(read, k):
+    counts = {}
+    num_kmers = len(read) - k + 1 
+    for i in range(num_kmers):
+        kmer = read[i:i+k]
+        if kmer not in counts:
+            counts[kmer] = 0
+        counts[kmer] += 1
+    return counts
+count_kmers(&quot;ATCATCATG&quot;,3)</code></pre>
+<pre><code>## {&#39;ATG&#39;: 1, &#39;CAT&#39;: 2, &#39;ATC&#39;: 2, &#39;TCA&#39;: 2}</code></pre>
+<pre class="python"><code>my_seq2 = &quot;CAGCCCAATCAGGCTCTACTGCCACTAAACTTACGCAGGATATATTTACGCCGACGTACT&quot;
+def count_kmers(read, k):
+    counts = {}
+    num_kmers = len(read) - k + 1 
+    for i in range(num_kmers):
+        kmer = read[i:i+k]
+        if kmer not in counts:
+            counts[kmer] = 0
+        counts[kmer] += 1
+    return counts
+count_kmers(&quot;CAGCCCAATCAGGCTCTACTGCCACTAAACTTACGCAGGATATATTTACGCCGACGTACT&quot;, 3)</code></pre>
+<pre><code>## {&#39;CTT&#39;: 1, &#39;AAA&#39;: 1, &#39;ATC&#39;: 1, &#39;AAC&#39;: 1, &#39;ATA&#39;: 2, &#39;AGG&#39;: 2, &#39;CTC&#39;: 1, &#39;AGC&#39;: 1, &#39;AAT&#39;: 1, &#39;ATT&#39;: 1, &#39;CTG&#39;: 1, &#39;CTA&#39;: 2, &#39;ACT&#39;: 4, &#39;CAC&#39;: 1, &#39;ACG&#39;: 3, &#39;CAA&#39;: 1, &#39;CCA&#39;: 2, &#39;CCG&#39;: 1, &#39;CCC&#39;: 1, &#39;TAT&#39;: 2, &#39;CGA&#39;: 1, &#39;CAG&#39;: 3, &#39;TCT&#39;: 1, &#39;GAT&#39;: 1, &#39;TTT&#39;: 1, &#39;TGC&#39;: 1, &#39;GGA&#39;: 1, &#39;TAA&#39;: 1, &#39;GGC&#39;: 1, &#39;TAC&#39;: 4, &#39;TTA&#39;: 2, &#39;GAC&#39;: 1, &#39;CGT&#39;: 1, &#39;TCA&#39;: 1, &#39;GCA&#39;: 1, &#39;GTA&#39;: 1, &#39;GCC&#39;: 3, &#39;GCT&#39;: 1, &#39;CGC&#39;: 2}</code></pre>
+<p><img src="/blog/2020-05-15-new-post_files/IMG_8889.JPG" /></p>

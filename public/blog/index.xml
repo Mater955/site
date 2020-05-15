@@ -12,13 +12,14 @@
     
     
     <item>
-      <title>New Post</title>
+      <title>Reticulate and Computational Genomics Blog</title>
       <link>/blog/new-post/</link>
       <pubDate>Fri, 15 May 2020 00:00:00 +0000</pubDate>
       
       <guid>/blog/new-post/</guid>
-      <description> Coding if Cool! testing
-#Python code chunk x=&amp;quot;dog&amp;quot; #R code chunk library(reticulate) py$x ## NULL </description>
+      <description>FUN WITH RETICULATE:
+The reticulate package lets R and Python work together! I tested this out with a few codes below. Continue reading for a more detailed explanation on how this works.
+library(reticulate) Sys.setenv(RETICULATE_PYTHON=&amp;quot;/usr/bin/python&amp;quot;) use_python(&amp;quot;/usr/bin/python&amp;quot;) #Python code chunk x=&amp;quot;Magic&amp;quot; y=&amp;quot;Abracadabra&amp;quot; print(&amp;quot;R and Python are cool!&amp;quot;) ## R and Python are cool! #R code chunk library(reticulate) py$x ## [1] &amp;quot;Magic&amp;quot; py$y ## [1] &amp;quot;Abracadabra&amp;quot; You can assign something to an R code chunk like “hello“ and save it as “hi” then in python you can also assign something like “world” and also save it as “hi”.</description>
     </item>
     
   </channel>
