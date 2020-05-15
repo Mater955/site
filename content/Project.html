@@ -1,0 +1,322 @@
+---
+title: 'Project 1: Exploratory Data Analysis'
+author: "MaterDolorosa Osueke - SDS348"
+date: "2020-05-13"
+output:
+  pdf_document:
+    toc: no
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+---
+
+
+
+<p>Introduction
+The two datasets that I have chosen to use for my analysis are Temp_increase_1850_2018_and co2_concentration_1850_2018_. These two datasets contain information on global temperature increase and global Co2 emissions. The first dataset looks into global temperature increase from 1850-2017. The second dataset looks into global Co2 emissions as well as emissions from some of the world’s largest producers, the US and China from the years 1850-2017. I chose these datasets because I was interested in seeing the relationship between carbon emissions both globally and from the biggest producers and the way it correlates with global temperature increase. This information is important to understand global warming, changing climate, and physical as well as health impacts that we see today. The information in these datasets were acquired through “Our World Data” which collects this type of information. Some potential associations I expect to see are higher global temperatures as US and China Co2 emissions increase. I also expect to see a positive correlation between global Co2 emissions and China an US Co2 emissions.
+—</p>
+<pre class="r"><code>library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(devtools)
+library(readxl)
+
+tinytex::install_tinytex()</code></pre>
+<div id="tidying-rearranging-widelong" class="section level1">
+<h1>Tidying: Rearranging Wide/Long</h1>
+<pre class="r"><code>Temp&lt;-read_excel(&quot;Temp.xlsx&quot;)
+Carbon&lt;-read_excel(&quot;Carbon.xlsx&quot;)
+
+longdata &lt;- Carbon%&gt;%pivot_longer(cols = c(&quot;US&quot;, &quot;China&quot;), names_to = &quot;US and China&quot;, values_to = &quot;ppm&quot;)
+
+glimpse(longdata)</code></pre>
+<pre><code>## Observations: 256
+## Variables: 4
+## $ Year           &lt;dbl&gt; 1850, 1850, 1851, 1851, 1854, 1854, 1855, 1855, 1857, …
+## $ CO2_global     &lt;dbl&gt; 284.00, 284.00, 287.13, 287.13, 288.05, 288.05, 285.57…
+## $ `US and China` &lt;chr&gt; &quot;US&quot;, &quot;China&quot;, &quot;US&quot;, &quot;China&quot;, &quot;US&quot;, &quot;China&quot;, &quot;US&quot;, &quot;Ch…
+## $ ppm            &lt;dbl&gt; 19792928, 0, 24633072, 0, 26791168, 0, 30162048, 0, 33…</code></pre>
+<div id="from-the-carbon-dataset-i-decided-to-tidy-the-columns-called-us-and-the-column-called-china-into-a-column-named-us-and-china.-i-chose-to-use-pivot-longer-because-i-thought-it-would-make-the-dataset-look-nicer-and-shorter-due-to-it-looking-a-little-wide-with-the-previous-us-and-china-sections.-i-also-thought-it-would-make-it-easier-to-compare-the-co2-emissions-produced-by-china-and-the-us-over-the-years." class="section level2">
+<h2>From the Carbon dataset, I decided to tidy the columns called “US” and the column called “China” into a column named “US and China”. I chose to use pivot longer because I thought it would make the dataset look nicer and shorter due to it looking a little wide with the previous US and China sections. I also thought it would make it easier to compare the Co2 emissions produced by China and the US over the years.</h2>
+</div>
+</div>
+<div id="joiningmerging" class="section level1">
+<h1>Joining/Merging</h1>
+<pre class="r"><code>Global &lt;- Temp%&gt;%
+  full_join(Carbon, by = &#39;Year&#39;)
+
+Global_TC &lt;- na.omit(Global)
+glimpse(Global_TC)</code></pre>
+<pre><code>## Observations: 128
+## Variables: 5
+## $ Year        &lt;dbl&gt; 1850, 1851, 1854, 1855, 1857, 1859, 1862, 1863, 1864, 186…
+## $ Global_Temp &lt;dbl&gt; -0.373, -0.218, -0.248, -0.272, -0.461, -0.284, -0.524, -…
+## $ CO2_global  &lt;dbl&gt; 284.00, 287.13, 288.05, 285.57, 283.16, 286.63, 287.17, 2…
+## $ US          &lt;dbl&gt; 19792928, 24633072, 26791168, 30162048, 33159200, 3816056…
+## $ China       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</code></pre>
+<div id="the-type-of-join-i-performed-on-my-2-datasets-was-a-full-join.-this-join-was-performed-because-it-returns-all-rows-from-both-tables-and-joins-matching-keys-in-both-the-left-and-right-datasets.-using-this-type-of-join-also-allows-me-to-retain-more-cases.-no-cases-where-dropped-with-this-join.-potential-problems-with-this-join-is-that-not-all-the-rows-in-each-dataset-have-info-needed-for-the-other-resulting-in-many-rows-with-na-values.-with-that-i-used-na.omit-to-get-rid-of-the-rows-containing-na-values." class="section level2">
+<h2>The Type of join I performed on my 2 datasets was a full join. This join was performed because it returns all rows from both tables and joins matching keys in both the left and right datasets. Using this type of join also allows me to retain more cases. No cases where dropped with this join. Potential problems with this join is that not all the rows in each dataset have info needed for the other resulting in many rows with NA values. With that, I used na.omit to get rid of the rows containing NA values.</h2>
+</div>
+</div>
+<div id="wrangling" class="section level1">
+<h1>Wrangling</h1>
+<pre class="r"><code>Global_TC%&gt;%filter(Year==&quot;1910&quot;)%&gt;%glimpse()</code></pre>
+<pre><code>## Observations: 1
+## Variables: 5
+## $ Year        &lt;dbl&gt; 1910
+## $ Global_Temp &lt;dbl&gt; -0.49
+## $ CO2_global  &lt;dbl&gt; 297.87
+## $ US          &lt;dbl&gt; 235393680
+## $ China       &lt;dbl&gt; 22731456</code></pre>
+<pre class="r"><code>Global_TC%&gt;%select(Year, US, China)%&gt;%head(10)</code></pre>
+<pre><code>## # A tibble: 10 x 3
+##     Year       US China
+##    &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;
+##  1  1850 19792928     0
+##  2  1851 24633072     0
+##  3  1854 26791168     0
+##  4  1855 30162048     0
+##  5  1857 33159200     0
+##  6  1859 38160560     0
+##  7  1862 40036528     0
+##  8  1863 41055120     0
+##  9  1864 41648688     0
+## 10  1867 45320016     0</code></pre>
+<pre class="r"><code>Global_TC%&gt;%arrange(desc(Year), desc(Global_Temp), desc(CO2_global)%&gt;%head(128))</code></pre>
+<pre><code>## # A tibble: 128 x 5
+##     Year Global_Temp CO2_global         US      China
+##    &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
+##  1  2017       0.677       407. 5269529513 9838754028
+##  2  2016       0.797       404. 5310861406 9704479432
+##  3  2015       0.763       401. 5420804127 9716467840
+##  4  2014       0.579       399. 5568759258 9820360492
+##  5  2013       0.514       397. 5519612557 9796527160
+##  6  2012       0.47        394. 5366730281 9633899303
+##  7  2011       0.425       392. 5570706560 9388199234
+##  8  2010       0.56        390. 5701075808 8500542695
+##  9  2009       0.506       387. 5495394958 7758811768
+## 10  2008       0.395       386. 5932775281 7375189907
+## # … with 118 more rows</code></pre>
+<pre class="r"><code>Global_TC%&gt;% group_by(Year)%&gt;%summarize(avg_CO2 = mean(CO2_global, na.rm = T), sd_co2 = sd(CO2_global, na.rm = T)%&gt;%head(10))</code></pre>
+<pre><code>## # A tibble: 128 x 3
+##     Year avg_CO2 sd_co2
+##    &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;
+##  1  1850    284      NA
+##  2  1851    287.     NA
+##  3  1854    288.     NA
+##  4  1855    286.     NA
+##  5  1857    283.     NA
+##  6  1859    287.     NA
+##  7  1862    287.     NA
+##  8  1863    285.     NA
+##  9  1864    287.     NA
+## 10  1867    285.     NA
+## # … with 118 more rows</code></pre>
+<pre class="r"><code>Global_TC%&gt;%mutate(USplusChina = US+China)%&gt;%head(10)</code></pre>
+<pre><code>## # A tibble: 10 x 6
+##     Year Global_Temp CO2_global       US China USplusChina
+##    &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;       &lt;dbl&gt;
+##  1  1850      -0.373       284  19792928     0    19792928
+##  2  1851      -0.218       287. 24633072     0    24633072
+##  3  1854      -0.248       288. 26791168     0    26791168
+##  4  1855      -0.272       286. 30162048     0    30162048
+##  5  1857      -0.461       283. 33159200     0    33159200
+##  6  1859      -0.284       287. 38160560     0    38160560
+##  7  1862      -0.524       287. 40036528     0    40036528
+##  8  1863      -0.278       285. 41055120     0    41055120
+##  9  1864      -0.494       287. 41648688     0    41648688
+## 10  1867      -0.321       285. 45320016     0    45320016</code></pre>
+<pre class="r"><code>Global_TC%&gt;%summarize(as_US = sd(US, na.rm = T))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##         as_US
+##         &lt;dbl&gt;
+## 1 2231493862.</code></pre>
+<pre class="r"><code>Global_TC%&gt;%slice(1:10)</code></pre>
+<pre><code>## # A tibble: 10 x 5
+##     Year Global_Temp CO2_global       US China
+##    &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;
+##  1  1850      -0.373       284  19792928     0
+##  2  1851      -0.218       287. 24633072     0
+##  3  1854      -0.248       288. 26791168     0
+##  4  1855      -0.272       286. 30162048     0
+##  5  1857      -0.461       283. 33159200     0
+##  6  1859      -0.284       287. 38160560     0
+##  7  1862      -0.524       287. 40036528     0
+##  8  1863      -0.278       285. 41055120     0
+##  9  1864      -0.494       287. 41648688     0
+## 10  1867      -0.321       285. 45320016     0</code></pre>
+<pre class="r"><code>Global_TC%&gt;% group_by(Year)%&gt;%summarize(avg_TEMP = mean(Global_Temp, na.rm = T), sd_temp = sd(Global_Temp, na.rm = T)%&gt;%head(10))</code></pre>
+<pre><code>## # A tibble: 128 x 3
+##     Year avg_TEMP sd_temp
+##    &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;
+##  1  1850   -0.373      NA
+##  2  1851   -0.218      NA
+##  3  1854   -0.248      NA
+##  4  1855   -0.272      NA
+##  5  1857   -0.461      NA
+##  6  1859   -0.284      NA
+##  7  1862   -0.524      NA
+##  8  1863   -0.278      NA
+##  9  1864   -0.494      NA
+## 10  1867   -0.321      NA
+## # … with 118 more rows</code></pre>
+<pre class="r"><code>Global_TC%&gt;% group_by(Year)%&gt;%summarize(med_US = median(US, na.rm = T), max_US = max(US, na.rm = T)%&gt;%head(10))</code></pre>
+<pre><code>## # A tibble: 128 x 3
+##     Year   med_US   max_US
+##    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+##  1  1850 19792928 19792928
+##  2  1851 24633072 24633072
+##  3  1854 26791168 26791168
+##  4  1855 30162048 30162048
+##  5  1857 33159200 33159200
+##  6  1859 38160560 38160560
+##  7  1862 40036528 40036528
+##  8  1863 41055120 41055120
+##  9  1864 41648688 41648688
+## 10  1867 45320016 45320016
+## # … with 118 more rows</code></pre>
+<pre class="r"><code>Global_TC%&gt;% group_by(Year)%&gt;%summarize(med_china = median(China, na.rm = T), min_china = min(China, na.rm = T)%&gt;%head(10))</code></pre>
+<pre><code>## # A tibble: 128 x 3
+##     Year med_china min_china
+##    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+##  1  1850         0         0
+##  2  1851         0         0
+##  3  1854         0         0
+##  4  1855         0         0
+##  5  1857         0         0
+##  6  1859         0         0
+##  7  1862         0         0
+##  8  1863         0         0
+##  9  1864         0         0
+## 10  1867         0         0
+## # … with 118 more rows</code></pre>
+<pre class="r"><code>Global_TC%&gt;%summarize(as_Temp = sd(Global_Temp, na.rm = T))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   as_Temp
+##     &lt;dbl&gt;
+## 1   0.311</code></pre>
+<pre class="r"><code>Global_TC%&gt;%summarize(as_Co2 = sd(CO2_global, na.rm = T))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   as_Co2
+##    &lt;dbl&gt;
+## 1   33.1</code></pre>
+<pre class="r"><code>Global_TC%&gt;%summarize(as_China = sd(China, na.rm = T))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##      as_China
+##         &lt;dbl&gt;
+## 1 2641838000.</code></pre>
+<pre class="r"><code>Global_TC%&gt;%mutate(co2.dat = case_when(CO2_global&gt;400 ~ &quot;high&quot;, CO2_global&lt;400 &amp; CO2_global&gt;300 ~ &quot;med&quot;, CO2_global&lt;300 ~ &quot;low&quot;))%&gt;%head(10)</code></pre>
+<pre><code>## # A tibble: 10 x 6
+##     Year Global_Temp CO2_global       US China co2.dat
+##    &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;  
+##  1  1850      -0.373       284  19792928     0 low    
+##  2  1851      -0.218       287. 24633072     0 low    
+##  3  1854      -0.248       288. 26791168     0 low    
+##  4  1855      -0.272       286. 30162048     0 low    
+##  5  1857      -0.461       283. 33159200     0 low    
+##  6  1859      -0.284       287. 38160560     0 low    
+##  7  1862      -0.524       287. 40036528     0 low    
+##  8  1863      -0.278       285. 41055120     0 low    
+##  9  1864      -0.494       287. 41648688     0 low    
+## 10  1867      -0.321       285. 45320016     0 low</code></pre>
+<pre class="r"><code>Global_TC%&gt;%mutate(Temp.dat = case_when(Global_Temp&gt;.5 ~ &quot;high&quot;, Global_Temp&lt;.5 &amp; Global_Temp&gt;0 ~ &quot;med&quot;, Global_Temp&lt;0 ~ &quot;low&quot;))%&gt;%group_by(Year)</code></pre>
+<pre><code>## # A tibble: 128 x 6
+## # Groups:   Year [128]
+##     Year Global_Temp CO2_global       US China Temp.dat
+##    &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;   
+##  1  1850      -0.373       284  19792928     0 low     
+##  2  1851      -0.218       287. 24633072     0 low     
+##  3  1854      -0.248       288. 26791168     0 low     
+##  4  1855      -0.272       286. 30162048     0 low     
+##  5  1857      -0.461       283. 33159200     0 low     
+##  6  1859      -0.284       287. 38160560     0 low     
+##  7  1862      -0.524       287. 40036528     0 low     
+##  8  1863      -0.278       285. 41055120     0 low     
+##  9  1864      -0.494       287. 41648688     0 low     
+## 10  1867      -0.321       285. 45320016     0 low     
+## # … with 118 more rows</code></pre>
+<div id="with-the-filter-code-i-set-the-dataset-to-filter-by-year-specifically-1910.-this-showed-summary-statistics-for-global-temperature-increase-global-co2-emissions-and-co2-emissions-in-the-us-and-china-at-that-time.-with-the-select-function-i-was-able-to-select-for-the-year-us-and-china-information.-with-the-arrange-code-i-was-able-to-arrange-year-global-temp-and-co2-global-in-descending-order.-i-used-the-group-by-function-to-allow-the-dataset-to-correspond-by-year-and-the-summarize-was-used-to-summarize-this-data-giving-mean-and-standard-deviation-of-global-co2-emissions.-i-performed-similar-group-by-functions-for-each-variable-summarizing-with-functions-such-as-median-mean-max-min-and-standard-deviation.-i-used-mutate-to-create-a-new-column-called-uspluschina-where-i-was-able-to-get-the-sum-of-us-and-china-co2-emissions-in-a-new-column.-i-also-used-the-code-slice-which-showed-observations-1-10-of-the-dataset.-the-summarize-function-was-also-used-to-summarize-standard-deviation-information-for-us-co2-emissions.-mutate-was-also-used-to-create-new-columns-showing-low-medium-and-high-values-for-different-variables." class="section level2">
+<h2>With the filter code, I set the dataset to filter by Year specifically 1910. This showed summary statistics for global temperature increase, global co2 emissions and co2 emissions in the US and China at that time. With the select function, I was able to select for the Year, US, and China information. With the arrange code, I was able to arrange Year, Global Temp, and Co2 global in descending order. I used the group by function to allow the dataset to correspond by Year and the summarize was used to summarize this data giving mean and standard deviation of global Co2 emissions. I performed similar group by functions for each variable summarizing with functions such as median, mean, max, min and standard deviation. I used mutate to create a new column called “USplusChina” where I was able to get the sum of US and China Co2 emissions in a new column. I also used the code slice which showed observations 1-10 of the dataset. The summarize function was also used to summarize standard deviation information for US co2 emissions. Mutate was also used to create new columns showing low, medium, and high values for different variables.</h2>
+</div>
+</div>
+<div id="visualizing" class="section level1">
+<h1>Visualizing</h1>
+<pre class="r"><code>library(ggplot2)
+carbtemp &lt;- round(cor(Global_TC),2)
+head(carbtemp)</code></pre>
+<pre><code>##             Year Global_Temp CO2_global   US China
+## Year        1.00        0.84       0.91 0.92  0.64
+## Global_Temp 0.84        1.00       0.93 0.87  0.81
+## CO2_global  0.91        0.93       1.00 0.95  0.87
+## US          0.92        0.87       0.95 1.00  0.71
+## China       0.64        0.81       0.87 0.71  1.00</code></pre>
+<pre class="r"><code>library(reshape2)
+melted_carbtemp &lt;- melt(carbtemp)
+head(melted_carbtemp)</code></pre>
+<pre><code>##          Var1        Var2 value
+## 1        Year        Year  1.00
+## 2 Global_Temp        Year  0.84
+## 3  CO2_global        Year  0.91
+## 4          US        Year  0.92
+## 5       China        Year  0.64
+## 6        Year Global_Temp  0.84</code></pre>
+<pre class="r"><code>ggplot(data = melted_carbtemp, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()+ggtitle(&quot;Heatmap&quot;)</code></pre>
+<p><img src="/Project_files/figure-html/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(data = Global_TC, aes(x=Global_Temp, y=China, color=Year))+geom_point()+ggtitle(&quot;China CO2 emission vs Global Temp increase over the Years&quot;)+theme_dark()</code></pre>
+<p><img src="/Project_files/figure-html/unnamed-chunk-5-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(data = Global_TC, aes(x=Global_Temp, y=US, color=Year))+geom_point(size=2, stat = &quot;summary&quot;)+ ggtitle(&quot;Distribution of US CO2 emission over the Years&quot;)+stat_summary(size=.2,color=&#39;green&#39;)</code></pre>
+<p><img src="/Project_files/figure-html/unnamed-chunk-5-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(Global_TC, aes(Year,US))+geom_point(aes(color=Global_Temp, size=CO2_global))+ggtitle(&quot;Dist.of US CO2 compared to Globe Temp increase over years&quot;)</code></pre>
+<p><img src="/Project_files/figure-html/unnamed-chunk-5-4.png" width="672" style="display: block; margin: auto;" />
+In the first graph a heat map was created maping the different variables in the dataset. The cells show the degree of correlation ranging from 0 to 1. In the next graph titled “China CO2 emission vs Global Temp increase over the Years”, it showed the relationship between Global Temperature increase across the world and the amount of CO2 emissions produced by China from the years 1850-2017. Based on the graph we see that global temperature increase (&gt;0) began to rise around the time that China’s CO2 emissions increased dramatically. There seems to be a positive correlation as the graph has an upward positive slope.</p>
+<div id="in-the-next-graph-titled-distribution-of-us-co2-emission-over-the-years-it-graphed-the-global-temperature-increase-on-the-x-axis-the-us-co2-emissions-on-the-y-axis-and-analyzed-those-variables-over-the-years.-based-on-this-graph-the-we-see-that-most-data-is-around-2000000000-ppm-of-co2-emission-from-the-us.-in-addition-we-can-see-that-there-is-a-positive-correlation-between-global-temperature-increase-and-us-co2-emissions-over-the-years-from-1850-2017.-the-mapping-of-the-last-graph-allows-us-to-see-that-ther-is-an-increase-in-global-temp-as-us-emmissions-of-co2-have-increased-over-the-years.-as-we-look-past-the-year-2000-we-see-a-slight-decrease-in-the-us-co2-emmisison-however-the-global-temperature-still-shows-increase." class="section level2">
+<h2>In the next graph titled “Distribution of US CO2 emission over the Years”, it graphed the global temperature increase on the x-axis, the US Co2 emissions on the Y-axis and analyzed those variables over the years. Based on this graph the we see that most data is around 2,000000000 ppm of Co2 emission from the US. In addition, we can see that there is a positive correlation between global temperature increase and US Co2 emissions over the years from 1850-2017. The mapping of the last graph allows us to see that ther is an increase in global temp as US emmissions of CO2 have increased over the years. As we look past the year 2000 we see a slight decrease in the US co2 emmisison however the global temperature still shows increase.</h2>
+</div>
+</div>
+<div id="dimensionality-reduction" class="section level1">
+<h1>Dimensionality Reduction</h1>
+<pre class="r"><code>library(cluster)
+kmeans1 &lt;- Global_TC %&gt;% kmeans(3)
+kmeans1</code></pre>
+<pre><code>## K-means clustering with 3 clusters of sizes 32, 82, 14
+## 
+## Cluster means:
+##     Year Global_Temp CO2_global         US      China
+## 1 1987.5   0.1522187   350.1984 4810263720 1686608067
+## 2 1918.5  -0.2129878   303.3965  844935631   37321549
+## 3 2010.5   0.5482143   391.3021 5684149717 8262128099
+## 
+## Clustering vector:
+##   [1] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+##  [38] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+##  [75] 2 2 2 2 2 2 2 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+##  [ reached getOption(&quot;max.print&quot;) -- omitted 28 entries ]
+## 
+## Within cluster sum of squares by cluster:
+## [1] 5.754559e+19 7.377304e+19 3.860966e+19
+##  (between_SS / total_SS =  88.8 %)
+## 
+## Available components:
+## 
+## [1] &quot;cluster&quot;      &quot;centers&quot;      &quot;totss&quot;        &quot;withinss&quot;     &quot;tot.withinss&quot;
+## [6] &quot;betweenss&quot;    &quot;size&quot;         &quot;iter&quot;         &quot;ifault&quot;</code></pre>
+<pre class="r"><code>kmeans1$cluster</code></pre>
+<pre><code>##   [1] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+##  [38] 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+##  [75] 2 2 2 2 2 2 2 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+##  [ reached getOption(&quot;max.print&quot;) -- omitted 28 entries ]</code></pre>
+<pre class="r"><code>kmeans1$centers</code></pre>
+<pre><code>##     Year Global_Temp CO2_global         US      China
+## 1 1987.5   0.1522187   350.1984 4810263720 1686608067
+## 2 1918.5  -0.2129878   303.3965  844935631   37321549
+## 3 2010.5   0.5482143   391.3021 5684149717 8262128099</code></pre>
+<pre class="r"><code>kmeans1$size</code></pre>
+<pre><code>## [1] 32 82 14</code></pre>
+<pre class="r"><code>kmeansclust &lt;- Global_TC %&gt;% mutate(cluster=as.factor(kmeans1$cluster))
+kmeansclust %&gt;% ggplot(aes(Year,Global_Temp,CO2_global,US,China, color=cluster)) + geom_point()+ggtitle(&quot;K-means Cluster&quot;)</code></pre>
+<p><img src="/Project_files/figure-html/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" />
+# For my data I performed a K-means cluster where I asked it to find 3 clusters using variables: Year, Global_Temp, CO2_global, US,China in my dataset. K means works by picking three initial cluster points and assigning points to each cluster based on the distances. With my graph we are able to see these three cluster groups. The first group is from year 1850-1866 with its center being ~ 1918.5 years and its cluster size being 82,the second cluster is from 1866-2000 with its center being ~ 1987.5 years and cluster size 32, and the third cluster is from 2000 up with its center being ~2010.5 and cluster size being 14. The number of clusters, cluster size, and cluster centers could be seen through the use of function: kmeans1<span class="math inline">\(cluster, kmeans1\)</span>centers, kmeans1$size.</p>
+</div>

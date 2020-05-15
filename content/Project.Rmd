@@ -1,0 +1,117 @@
+---
+title: 'Project 1: Exploratory Data Analysis'
+author: "MaterDolorosa Osueke - SDS348"
+date: "2020-05-13"
+output:
+  pdf_document:
+    toc: no
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = "center", warning = F, message = F,
+tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100))
+```
+```{r global_options, include=FALSE}
+library(latticeExtra)
+library(fivethirtyeight)
+library(knitr)
+```
+Introduction
+The two datasets that I have chosen to use for my analysis are Temp_increase_1850_2018_and co2_concentration_1850_2018_. These two datasets contain information on global temperature increase and global Co2 emissions. The first dataset looks into global temperature increase from 1850-2017. The second dataset looks into global Co2 emissions as well as emissions from some of the world’s largest producers, the US and China from the years 1850-2017. I chose these datasets because I was interested in seeing the relationship between carbon emissions both globally and from the biggest producers and the way it correlates with global temperature increase. This information is important to understand global warming, changing climate, and physical as well as health impacts that we see today. The information in these datasets were acquired through “Our World Data” which collects this type of information. Some potential associations I expect to see are higher global temperatures as US and China Co2 emissions increase. I also expect to see a positive correlation between global Co2 emissions and China an US Co2 emissions. 
+---
+```{R}
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(devtools)
+library(readxl)
+
+tinytex::install_tinytex()
+
+```
+# Tidying: Rearranging Wide/Long
+
+```{R}
+
+Temp<-read_excel("Temp.xlsx")
+Carbon<-read_excel("Carbon.xlsx")
+
+longdata <- Carbon%>%pivot_longer(cols = c("US", "China"), names_to = "US and China", values_to = "ppm")
+
+glimpse(longdata)
+```
+From the Carbon dataset, I decided to tidy the columns called "US" and the column called "China" into a column named "US and China". I chose to use pivot longer because I thought it would make the dataset look nicer and shorter due to it looking a little wide with the previous US and China sections. I also thought it would make it easier to compare the Co2 emissions produced by China and the US over the years. 
+---
+# Joining/Merging
+
+```{R}
+Global <- Temp%>%
+  full_join(Carbon, by = 'Year')
+
+Global_TC <- na.omit(Global)
+glimpse(Global_TC)
+```
+The Type of join I performed on my 2 datasets was a full join. This join was performed because it returns all rows from both tables and joins matching keys in both the left and right datasets. Using this type of join also allows me to retain more cases. No cases where dropped with this join. Potential problems with this join is that not all the rows in each dataset have info needed for the other resulting in many rows with NA values. With that, I used na.omit to get rid of the rows containing  NA values.
+---
+# Wrangling
+
+```{R}
+Global_TC%>%filter(Year=="1910")%>%glimpse()
+Global_TC%>%select(Year, US, China)%>%head(10)
+Global_TC%>%arrange(desc(Year), desc(Global_Temp), desc(CO2_global)%>%head(128))
+Global_TC%>% group_by(Year)%>%summarize(avg_CO2 = mean(CO2_global, na.rm = T), sd_co2 = sd(CO2_global, na.rm = T)%>%head(10))
+Global_TC%>%mutate(USplusChina = US+China)%>%head(10)
+Global_TC%>%summarize(as_US = sd(US, na.rm = T))
+Global_TC%>%slice(1:10)
+Global_TC%>% group_by(Year)%>%summarize(avg_TEMP = mean(Global_Temp, na.rm = T), sd_temp = sd(Global_Temp, na.rm = T)%>%head(10))
+Global_TC%>% group_by(Year)%>%summarize(med_US = median(US, na.rm = T), max_US = max(US, na.rm = T)%>%head(10))
+Global_TC%>% group_by(Year)%>%summarize(med_china = median(China, na.rm = T), min_china = min(China, na.rm = T)%>%head(10))
+Global_TC%>%summarize(as_Temp = sd(Global_Temp, na.rm = T))
+Global_TC%>%summarize(as_Co2 = sd(CO2_global, na.rm = T))
+Global_TC%>%summarize(as_China = sd(China, na.rm = T))
+
+Global_TC%>%mutate(co2.dat = case_when(CO2_global>400 ~ "high", CO2_global<400 & CO2_global>300 ~ "med", CO2_global<300 ~ "low"))%>%head(10)
+Global_TC%>%mutate(Temp.dat = case_when(Global_Temp>.5 ~ "high", Global_Temp<.5 & Global_Temp>0 ~ "med", Global_Temp<0 ~ "low"))%>%group_by(Year)
+```
+With the filter code, I set the dataset to filter by Year specifically 1910. This showed summary statistics for global temperature increase, global co2 emissions and co2 emissions in the US and China at that time. With the select function, I was able to select for the Year, US, and China information. With the arrange code, I was able to arrange Year, Global Temp, and Co2 global in descending order. I used the group by function to allow the dataset to correspond by Year and the summarize was used to summarize this data giving mean and standard deviation of global Co2 emissions. I performed similar group by functions for each variable summarizing with functions such as median, mean, max, min and standard deviation. I used mutate to create a new column called “USplusChina” where I was able to get the sum of US and China Co2 emissions in a new column. I also used the code slice which showed observations 1-10 of the dataset. The summarize function was also used to summarize standard deviation information for US co2 emissions. Mutate was also used to create new columns showing low, medium, and high values for different variables.
+---
+# Visualizing
+```{R}
+library(ggplot2)
+carbtemp <- round(cor(Global_TC),2)
+head(carbtemp)
+library(reshape2)
+melted_carbtemp <- melt(carbtemp)
+head(melted_carbtemp)
+ggplot(data = melted_carbtemp, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()+ggtitle("Heatmap")
+
+ggplot(data = Global_TC, aes(x=Global_Temp, y=China, color=Year))+geom_point()+ggtitle("China CO2 emission vs Global Temp increase over the Years")+theme_dark()
+
+ggplot(data = Global_TC, aes(x=Global_Temp, y=US, color=Year))+geom_point(size=2, stat = "summary")+ ggtitle("Distribution of US CO2 emission over the Years")+stat_summary(size=.2,color='green')
+
+
+ggplot(Global_TC, aes(Year,US))+geom_point(aes(color=Global_Temp, size=CO2_global))+ggtitle("Dist.of US CO2 compared to Globe Temp increase over years")
+```
+In the first graph a heat map was created maping the different variables in the dataset. The cells show the degree of correlation ranging from 0 to 1. In the next graph titled "China CO2 emission vs Global Temp increase over the Years", it showed the relationship between Global Temperature increase across the world and the amount of CO2 emissions produced by China from the years 1850-2017. Based on the graph we see that global temperature increase (>0) began to rise around the time that China's CO2 emissions increased dramatically. There seems to be a positive correlation as the graph has an upward positive slope. 
+
+In the next graph titled "Distribution of US CO2 emission over the Years", it graphed the global temperature increase on the x-axis, the US Co2 emissions on the Y-axis and analyzed those variables over the years. Based on this graph the we see that most data is around 2,000000000 ppm of Co2 emission from the US. In addition, we can see that there is a positive correlation between global temperature increase and US Co2 emissions over the years from 1850-2017. The mapping of the last graph allows us to see that ther is an increase in global temp as US emmissions of CO2 have increased over the years. As we look past the year 2000 we see a slight decrease in the US co2 emmisison however the global temperature still shows increase.
+---
+# Dimensionality Reduction
+
+```{R}
+library(cluster)
+kmeans1 <- Global_TC %>% kmeans(3)
+kmeans1
+kmeans1$cluster
+kmeans1$centers
+kmeans1$size
+
+kmeansclust <- Global_TC %>% mutate(cluster=as.factor(kmeans1$cluster))
+kmeansclust %>% ggplot(aes(Year,Global_Temp,CO2_global,US,China, color=cluster)) + geom_point()+ggtitle("K-means Cluster")
+```
+# For my data I performed a K-means cluster where I asked it to find 3 clusters using variables: Year, Global_Temp, CO2_global, US,China in my dataset. K means works by picking three initial cluster points and assigning points to each cluster based on the distances. With my graph we are able to see these three cluster groups. The first group is from year 1850-1866 with its center being ~ 1918.5 years and its cluster size being 82,the second cluster is from 1866-2000 with its center being ~ 1987.5 years and cluster size 32, and the third cluster is from 2000 up with its center being ~2010.5 and cluster size being 14. The number of clusters, cluster size, and cluster centers could be seen through the use of function: kmeans1$cluster, kmeans1$centers, kmeans1$size. 

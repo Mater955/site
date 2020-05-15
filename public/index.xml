@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Portfolio</title>
+    <link>/</link>
+    <description>Recent content on Portfolio</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Wed, 13 May 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>New Post</title>
+      <link>/blog/new-post/</link>
+      <pubDate>Fri, 15 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/new-post/</guid>
+      <description> Coding if Cool!
+#Python code chunk x=&amp;quot;dog&amp;quot; #R code chunk library(reticulate) py$x ## NULL </description>
+    </item>
+    
+    <item>
+      <title>Project 1: Exploratory Data Analysis</title>
+      <link>/project/</link>
+      <pubDate>Wed, 13 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/project/</guid>
+      <description>Introduction The two datasets that I have chosen to use for my analysis are Temp_increase_1850_2018_and co2_concentration_1850_2018_. These two datasets contain information on global temperature increase and global Co2 emissions. The first dataset looks into global temperature increase from 1850-2017. The second dataset looks into global Co2 emissions as well as emissions from some of the world’s largest producers, the US and China from the years 1850-2017. I chose these datasets because I was interested in seeing the relationship between carbon emissions both globally and from the biggest producers and the way it correlates with global temperature increase.</description>
+    </item>
+    
+    <item>
+      <title>Projects</title>
+      <link>/projects/</link>
+      <pubDate>Sun, 02 Oct 2016 22:55:05 -0400</pubDate>
+      
+      <guid>/projects/</guid>
+      <description>Projects  Link to Project 1  </description>
+    </item>
+    
+  </channel>
+</rss>
