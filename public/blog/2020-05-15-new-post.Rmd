@@ -44,7 +44,7 @@ The output puts both codes together.See the example below which answers a punny 
 Riddle: What do you call an alligator in a vest? 
 ```{R}
 #R code chunk
-guess <- "An Investi-"
+guess <- "An InVESTi-"
 ```
 
 ```{python}
