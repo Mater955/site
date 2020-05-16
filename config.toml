@@ -22,7 +22,6 @@ theme = "hugo-sustain"
 [params.social]
   
   Email         = "mosuekecollege@gmail.com"
-  Twitter       = "momo_mater"
   Stackoverflow = "13522065"
   Github        = "Mater955"
 
