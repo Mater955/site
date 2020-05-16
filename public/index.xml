@@ -37,7 +37,8 @@ library(reticulate) Sys.setenv(RETICULATE_PYTHON=&amp;quot;/usr/bin/python&amp;q
       <pubDate>Wed, 13 May 2020 00:00:00 +0000</pubDate>
       
       <guid>/project22/</guid>
-      <description>Modeling Instructions A knitted R Markdown document (as a PDF) and the raw R Markdown file (as .Rmd) should both be submitted to Canvas by 11:59pm on 5/1/2020. These two documents will be graded jointly, so they must be consistent (i.e., don’t change the R Markdown file without also updating the knitted document). Knit an html copy too, for later! In the .Rmd file for Project 2, you can copy the first code-chunk into your project .</description>
+      <description>INTRODUCTION
+library(tidyverse) library(tidyr) library(dplyr) library(devtools) library(ggplot2) library(readxl) Leuk&amp;lt;-read.csv(&amp;quot;3Leuk.csv&amp;quot;) head(Leuk) ## Infil Index per.blast Time num.blast ## 1 34 5 36 1 low ## 2 63 4 74 2 low ## 3 8 8 39 4 low ## 4 27 5 42 1 low ## 5 22 6 44 1 low ## 6 53 12 76 1 low The dataset that I have decided to use for this project is the response to Treatment for Leukemia or Leuk dataset for short.</description>
     </item>
     
     <item>
